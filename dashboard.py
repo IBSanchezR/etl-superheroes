@@ -1,36 +1,14 @@
 import streamlit as st
 import pandas as pd
 import psycopg2
-import os
-from dotenv import load_dotenv
+
+from scripts.database import get_db_config
 
 # =========================
-# CONFIGURACIÓN
+# CONEXIÓN
 # =========================
-load_dotenv()
-
-mode = os.getenv("DB_MODE", "local")
-
-# =========================
-# CONEXIÓN DINÁMICA
-# =========================
-if mode == "local":
-    conn = psycopg2.connect(
-        dbname=os.getenv("LOCAL_DB_NAME"),
-        user=os.getenv("LOCAL_DB_USER"),
-        password=os.getenv("LOCAL_DB_PASSWORD"),
-        host=os.getenv("LOCAL_DB_HOST"),
-        port=os.getenv("LOCAL_DB_PORT")
-    )
-else:
-    conn = psycopg2.connect(
-        dbname=os.getenv("SUPA_DB_NAME"),
-        user=os.getenv("SUPA_DB_USER"),
-        password=os.getenv("SUPA_DB_PASSWORD"),
-        host=os.getenv("SUPA_DB_HOST"),
-        port=os.getenv("SUPA_DB_PORT"),
-        sslmode="require"
-    )
+config = get_db_config()
+conn = psycopg2.connect(**config)
 
 # =========================
 # CARGA DE DATOS
