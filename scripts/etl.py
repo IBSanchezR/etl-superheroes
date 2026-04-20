@@ -6,6 +6,8 @@ from pathlib import Path
 import requests
 import pandas as pd
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 
 
 # =========================
@@ -15,6 +17,23 @@ load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
 BASE_URL = os.getenv("BASE_URL")
+
+mode = os.getenv("DB_MODE", "local")
+
+if mode == "local":
+    DB_HOST = os.getenv("LOCAL_DB_HOST")
+    DB_PORT = os.getenv("LOCAL_DB_PORT", "5432")
+    DB_NAME = os.getenv("LOCAL_DB_NAME")
+    DB_USER = os.getenv("LOCAL_DB_USER")
+    DB_PASSWORD = os.getenv("LOCAL_DB_PASSWORD")
+    DB_SSLMODE = ""
+else:
+    DB_HOST = os.getenv("SUPA_DB_HOST")
+    DB_PORT = os.getenv("SUPA_DB_PORT", "6543")
+    DB_NAME = os.getenv("SUPA_DB_NAME")
+    DB_USER = os.getenv("SUPA_DB_USER")
+    DB_PASSWORD = os.getenv("SUPA_DB_PASSWORD")
+    DB_SSLMODE = os.getenv("SUPA_DB_SSLMODE", "require")
 
 DATA_DIR = Path("data")
 LOG_DIR = Path("logs")
@@ -96,6 +115,53 @@ def transform_hero(data):
 
 
 # =========================
+# CARGA A POSTGRESQL
+# =========================
+def load_to_postgres(df):
+    try:
+        if DB_SSLMODE:
+            database_url = URL.create(
+                drivername="postgresql+psycopg2",
+                username=DB_USER,
+                password=DB_PASSWORD,
+                host=DB_HOST,
+                port=int(DB_PORT),
+                database=DB_NAME,
+                query={"sslmode": DB_SSLMODE}
+            )
+        else:
+            database_url = URL.create(
+                drivername="postgresql+psycopg2",
+                username=DB_USER,
+                password=DB_PASSWORD,
+                host=DB_HOST,
+                port=int(DB_PORT),
+                database=DB_NAME
+            )
+
+        engine = create_engine(database_url)
+        
+        with engine.connect() as conn:
+            conn.execute(text("TRUNCATE TABLE heroes RESTART IDENTITY"))
+            conn.commit()
+
+        df.to_sql("heroes", engine, if_exists="append", index=False)
+
+        with engine.connect() as conn:
+            total = conn.execute(text("SELECT COUNT(*) FROM heroes")).scalar()
+
+        print("Datos guardados en PostgreSQL ✅")
+        print(f"Modo de conexión: {mode}")
+        print("Tabla: heroes")
+        print(f"Registros insertados: {total}")
+
+        logging.info(f"Datos cargados en PostgreSQL. Registros: {total}. Modo: {mode}")
+
+    except Exception as e:
+        print(f"Error al guardar en PostgreSQL: {e}")
+        logging.error(f"Error al guardar en PostgreSQL: {e}")
+
+# =========================
 # PROCESO PRINCIPAL
 # =========================
 def main():
@@ -126,6 +192,8 @@ def main():
     print("ETL completado ✅")
     print(f"JSON: {DATA_DIR / 'heroes_raw.json'}")
     print(f"CSV: {DATA_DIR / 'heroes.csv'}")
+
+    load_to_postgres(df)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,28 @@
+# Entorno virtual
 venv/
 .env
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Logs y datos generados
 logs/
 data/
+
+# Archivos temporales
 *.swp
+*.swo
+*.tmp
+
+# VS Code
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sistema
+.DS_Store
+Thumbs.db
