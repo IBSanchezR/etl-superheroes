@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-import psycopg2
+# import psycopg2
 
-from scripts.database import get_db_config
+# from scripts.database import get_db_config
 
 # =========================
 # CONEXIÓN
