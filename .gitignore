@@ -1,28 +1,22 @@
 # Entorno virtual
 venv/
-.env
-
-# Python
-__pycache__/
 *.pyc
-*.pyo
-*.pyd
+__pycache__/
 
-# Logs y datos generados
-logs/
+# Variables de entorno — NUNCA commitear
+.env
+.env.local
+
+# Credenciales de Streamlit — NUNCA commitear
+.streamlit/secrets.toml
+
+# Datos locales
 data/
+logs/
 
-# Archivos temporales
+# Temporales
 *.swp
-*.swo
 *.tmp
 
 # VS Code
 .vscode/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Sistema
-.DS_Store
-Thumbs.db
