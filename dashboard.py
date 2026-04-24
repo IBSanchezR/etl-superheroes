@@ -1,20 +1,10 @@
 import streamlit as st
 import pandas as pd
-# import psycopg2
-
-# from scripts.database import get_db_config
 
 # =========================
-# CONEXIÓN
+# CARGA DE DATOS (CSV)
 # =========================
-config = get_db_config()
-conn = psycopg2.connect(**config)
-
-# =========================
-# CARGA DE DATOS
-# =========================
-query = "SELECT * FROM heroes;"
-df = pd.read_sql(query, conn)
+df = pd.read_csv("data/heroes.csv")
 
 # =========================
 # INTERFAZ
@@ -110,8 +100,3 @@ st.subheader("Ranking general de poder")
 
 top_power = df.dropna(subset=["power"]).sort_values(by="power", ascending=False).head(10)
 st.dataframe(top_power[["name", "power", "publisher"]])
-
-# =========================
-# CIERRE CONEXIÓN
-# =========================
-conn.close()
